@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Dashboard Produits</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    input, select {
+      margin: 10px 5px;
+      padding: 5px;
+    }
+    canvas {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+
+  <input type="file" id="fileInput" accept=".json">
+
+
+  <input type="text" id="search" placeholder="Rechercher un produit">
+  <select id="sort">
+    <option value="">Trier par</option>
+    <option value="price">Prix</option>
+    <option value="stock">Stock</option>
+  </select>
+  <select id="category">
+    <option value="">Toutes les catégories</option>
+    <option value="Électronique">Électronique</option>
+    <option value="Mobilier">Mobilier</option>
+    <option value="Accessoires">Accessoires</option>
+  </select>
+
+
+  <h3>Produits en faible stock :</h3>
+  <ul id="lowStockList"></ul>
+
+  <h3>Prix total :</h3>
+  <div id="totalPrice"></div>
+
+  <h3>Dashboard (Stock des produits)</h3>
+  <canvas id="chart" width="400" height="200"></canvas>
+
+  <script>
+    let products = [];
+    let chart = null;
+
+    const fileInput = document.getElementById('fileInput');
+    const searchInput = document.getElementById('search');
+    const sortSelect = document.getElementById('sort');
+    const categorySelect = document.getElementById('category');
+    const totalPriceDiv = document.getElementById('totalPrice');
+    const lowStockList = document.getElementById('lowStockList');
+
+    // Lire le fichier JSON via FileReader
+    fileInput.addEventListener('change', function () {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        try {
+          products = JSON.parse(e.target.result);
+          updateUI();
+        } catch (err) {
+          alert("Erreur : le fichier sélectionné n'est pas un JSON valide.");
+        }
+      };
+      reader.readAsText(file);
+    });
+
+    // Filtres
+    searchInput.addEventListener('input', updateUI);
+    sortSelect.addEventListener('change', updateUI);
+    categorySelect.addEventListener('change', updateUI);
+
+    function updateUI() {
+      let filtered = [...products];
+
+      // Catégorie
+      const selectedCat = categorySelect.value;
+      if (selectedCat) {
+        filtered = filtered.filter(p => p.category === selectedCat);
+      }
+
+      // Recherche
+      const search = searchInput.value.toLowerCase();
+      if (search) {
+        filtered = filtered.filter(p => p.name.toLowerCase().includes(search));
+      }
+
+      // Tri
+      const sortKey = sortSelect.value;
+      if (sortKey) {
+        filtered.sort((a, b) => a[sortKey] - b[sortKey]);
+      }
+
+      // Prix total
+      const total = filtered.reduce((sum, p) => sum + (p.price * p.stock), 0);
+      totalPriceDiv.textContent = `${total.toFixed(2)} €`;
+
+      // Faible stock
+      const lowStock = filtered.filter(p => p.stock < 5);
+      lowStockList.innerHTML = lowStock
+        .map(p => `<li>${p.name} (stock: ${p.stock})</li>`)
+        .join('');
+
+      // Graphique
+      drawChart(filtered);
+    }
+
+    function drawChart(data) {
+      const ctx = document.getElementById('chart').getContext('2d');
+      if (chart) chart.destroy();
+
+      chart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: data.map(p => p.name),
+          datasets: [{
+            label: 'Stock',
+            data: data.map(p => p.stock),
+            backgroundColor: 'rgba(75, 192, 192, 0.7)'
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
+

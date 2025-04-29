@@ -1,0 +1,33 @@
+[
+    {
+      "name": "Ordinateur portable",
+      "price": 999,
+      "category": "Électronique",
+      "stock": 10
+    },
+    {
+      "name": "Smartphone",
+      "price": 699,
+      "category": "Électronique",
+      "stock": 25
+    },
+    {
+      "name": "Chaise de bureau",
+      "price": 149,
+      "category": "Mobilier",
+      "stock": 5
+    },
+    {
+      "name": "Casque audio",
+      "price": 89,
+      "category": "Électronique",
+      "stock": 40
+    },
+    {
+      "name": "Bouteille isotherme",
+      "price": 25,
+      "category": "Accessoires",
+      "stock": 100
+    }
+  ]
+  
